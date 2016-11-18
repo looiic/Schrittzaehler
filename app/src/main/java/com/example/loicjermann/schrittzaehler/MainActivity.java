@@ -45,6 +45,7 @@ public class MainActivity extends AppCompatActivity implements StepListener {
     private Button btnNextStep;
     private TextView lblQr, lblQr2, lblStepCounter, lblSteps;
     private String qrContent, start, end, walk;
+    private Boolean esHatDaten = false;
 
     TextToSpeech ttobj;
 
@@ -53,7 +54,7 @@ public class MainActivity extends AppCompatActivity implements StepListener {
     private Sensor sensor;
     private StepCounter stepCounter;
 
-    private int steps = 0;
+    private int steps = 0, index = 0;
 
 
     @Override
@@ -138,13 +139,15 @@ public class MainActivity extends AppCompatActivity implements StepListener {
                         JSONArray jsonArray = (JSONArray)input;
                         if (jsonArray != null) {
                             int len = jsonArray.length();
-                            for (int i=0;i<len;i++){
+                            for (int i = 0; i < len; i++) {
                                 list.add(jsonArray.get(i).toString());
                             }
+                            esHatDaten = true;
                         }
 
-                        lblQr.setText(list.get(0));
-                        lblQr2.setText(list.get(1));
+
+                    lblQr.setText(list.get(index));
+                    lblQr2.setText(list.get(index + 1));
 
                     } catch (Exception e) {
                         e.getStackTrace();
@@ -212,8 +215,23 @@ public class MainActivity extends AppCompatActivity implements StepListener {
     public void onStep() {
         this.steps++;
         lblSteps.setText(String.valueOf(steps));
-        if (this.steps > 10){
-            ttobj.speak("hallo", TextToSpeech.QUEUE_FLUSH, null);
+        if(esHatDaten == true){
+            try{
+                String eintrag1 = this.list.get(index);
+                //if (steps == 1){
+                if (eintrag1.equals("10")) {
+                    index++;
+                    ttobj.speak("links", TextToSpeech.QUEUE_FLUSH, null);
+                    steps = 0;
+                    lblSteps.setText(String.valueOf(steps));
+                    //lblQr.setText(list.get(index + 1));
+                    //lblQr2.setText(list.get(index + 2));
+                }
+            }catch(Exception e){
+                Toast.makeText(getApplicationContext(),
+                        e.getMessage(),
+                        Toast.LENGTH_LONG).show();
+            }
         }
     }
 }
