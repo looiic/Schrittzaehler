@@ -15,21 +15,26 @@ package com.example.loicjermann.schrittzaehler;
 
 //package ch.appquest.schrittzaehler;
 
-        import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.hardware.Sensor;
+import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.speech.tts.TextToSpeech;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Locale;
 
-public class MainActivity extends Activity {
+public class MainActivity extends AppCompatActivity implements StepListener {
     private final int INTENT_REQUEST_QR_CODE_START = 0;
     private final int INTENT_REQUEST_WALK = 2;
 
@@ -37,22 +42,50 @@ public class MainActivity extends Activity {
     private Button btnQr;
     private Button btnStart;
     private Button btnEnd;
-    private TextView lblQr;
-    private String qrContent;
-    private String start;
-    private String end;
+    private Button btnNextStep;
+    private TextView lblQr, lblQr2, lblStepCounter, lblSteps;
+    private String qrContent, start, end, walk;
+
+    TextToSpeech ttobj;
+
+
+    private SensorManager sensorManager;
+    private Sensor sensor;
+    private StepCounter stepCounter;
+
+    private int steps = 0;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        stepCounter = new StepCounter(this);
+
+
         list = new ArrayList<String>();
         btnQr = (Button)findViewById(R.id.btnQr);
         btnStart =(Button)findViewById(R.id.btnStart);
         lblQr = (TextView)findViewById(R.id.lblQr);
+        lblQr2 = (TextView) findViewById(R.id.lblQr2);
+        lblStepCounter = (TextView) findViewById(R.id.lblStepCounter);
+        lblSteps = (TextView) findViewById(R.id.lblSteps);
+        lblSteps.setText(String.valueOf(steps));
         btnEnd = (Button)findViewById(R.id.btnEnd);
         initListener();
+
+
+        sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        sensor = (Sensor) sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+
+        ttobj = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
+            @Override
+            public void onInit(int status) {
+
+                ttobj.setLanguage(Locale.GERMAN);
+            }
+        }
+        );
     }
 
     private void initListener() {
@@ -66,6 +99,7 @@ public class MainActivity extends Activity {
             }
         });
 
+
         btnStart.setOnClickListener(new OnClickListener() {
 
             @Override
@@ -75,7 +109,6 @@ public class MainActivity extends Activity {
                 startActivityForResult(intent, INTENT_REQUEST_QR_CODE_START);
             }
         });
-
         btnEnd.setOnClickListener(new OnClickListener() {
 
             @Override
@@ -93,14 +126,32 @@ public class MainActivity extends Activity {
             case INTENT_REQUEST_QR_CODE_START:
                 if (resultCode == RESULT_OK) {
                     qrContent = data.getStringExtra("SCAN_RESULT");
-                    lblQr.setText(qrContent);
 
                     try {
-                        JSONObject js = new JSONObject(qrContent);
-                        start = js.getString("startStation");
+
+                        JSONObject jsonObj = new JSONObject(qrContent);
+                        JSONArray input = jsonObj.getJSONArray("input");
+
+                        start = jsonObj.getString("startStation");
+
+                        ArrayList<String> list = new ArrayList<String>();
+                        JSONArray jsonArray = (JSONArray)input;
+                        if (jsonArray != null) {
+                            int len = jsonArray.length();
+                            for (int i=0;i<len;i++){
+                                list.add(jsonArray.get(i).toString());
+                            }
+                        }
+
+                        lblQr.setText(list.get(0));
+                        lblQr2.setText(list.get(1));
 
                     } catch (Exception e) {
                         e.getStackTrace();
+                        lblQr.setText("Failed");
+                        Toast.makeText(getApplicationContext(),
+                                "Json parsing error: " + e.getMessage(),
+                                Toast.LENGTH_LONG).show();
                     }
                 }
 
@@ -114,7 +165,7 @@ public class MainActivity extends Activity {
                         JSONObject js = new JSONObject(qrContent);
                         end = js.getString("endStation");
 
-                        Toast.makeText(getApplicationContext(), "{\"startStation\": " + start + ", \"endStation\": "+ end + "}", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getApplicationContext(), "{\"task\": \"Schrittzaehler\", \"startStation\": " + start + ", \"endStation\": "+ end + "}", Toast.LENGTH_SHORT).show();
                         log();
                     } catch (Exception e) {
                         e.getStackTrace();
@@ -134,7 +185,7 @@ public class MainActivity extends Activity {
 
         intent.putExtra("ch.appquest.taskname", "Schrittz�hler");
         // Achtung, je nach App wird etwas anderes eingetragen (siehe Tabelle ganz unten):
-        intent.putExtra("ch.appquest.logmessage", "{\"startStation\": " + start + ", \"endStation\": "+ end + "}");
+        intent.putExtra("ch.appquest.logmessage", "{\"task\": \"Schrittzaehler\", \"startStation\": " + start + ", \"endStation\": "+ end + "}");
 
         startActivity(intent);
     }
@@ -142,12 +193,27 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
+        if (stepCounter != null) {
+            sensorManager.registerListener(stepCounter, sensor, SensorManager.SENSOR_DELAY_FASTEST);
+        }
 
     }
 
     @Override
     protected void onPause() {
         super.onPause();
+        if (stepCounter != null) {
+            sensorManager.unregisterListener(stepCounter);
+        }
 
+    }
+
+    @Override
+    public void onStep() {
+        this.steps++;
+        lblSteps.setText(String.valueOf(steps));
+        if (this.steps > 10){
+            ttobj.speak("hallo", TextToSpeech.QUEUE_FLUSH, null);
+        }
     }
 }

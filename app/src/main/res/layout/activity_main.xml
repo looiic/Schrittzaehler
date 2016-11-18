@@ -5,8 +5,8 @@
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin">
-    <!-- tools:context="ch.appquest.schrittzaehler.MainActivity" -->
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="com.example.loicjermann.schrittzaehler.MainActivity">
 
 
     <Button
@@ -42,5 +42,21 @@
         android:layout_alignRight="@+id/lblQr"
         android:layout_marginBottom="38dp"
         android:text="Start" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="New Text"
+        android:id="@+id/lblSteps"
+        android:layout_below="@+id/lblQr"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="66dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/lblQr2"
+        android:layout_below="@+id/lblQr"
+        android:layout_centerHorizontal="true" />
 
 </RelativeLayout>
