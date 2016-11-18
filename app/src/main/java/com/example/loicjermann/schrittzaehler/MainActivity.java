@@ -217,9 +217,8 @@ public class MainActivity extends AppCompatActivity implements StepListener {
         lblSteps.setText(String.valueOf(steps));
         if(esHatDaten == true){
             try{
-                String eintrag1 = this.list.get(index);
-                //if (steps == 1){
-                if (eintrag1.equals("10")) {
+                if (steps == Integer.parseInt(list.get(index))){
+
                     index++;
                     ttobj.speak("links", TextToSpeech.QUEUE_FLUSH, null);
                     steps = 0;
