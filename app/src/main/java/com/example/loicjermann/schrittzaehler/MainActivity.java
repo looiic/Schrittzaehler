@@ -40,12 +40,12 @@ public class MainActivity extends AppCompatActivity implements StepListener {
 
     private ArrayList<String> list;
     private Button btnQr;
-    private Button btnStart;
+    //private Button btnStart;
     private Button btnEnd;
-    private Button btnNextStep;
+    //private Button btnNextStep;
     private TextView lblQr, lblQr2, lblStepCounter, lblSteps;
-    private String qrContent, start, end, walk;
-    private Boolean esHatDaten = false;
+    private String qrContent, start, end; //walk;
+    private Boolean esHatDaten = false, letztereintrag = false;
 
     TextToSpeech ttobj;
 
@@ -66,10 +66,11 @@ public class MainActivity extends AppCompatActivity implements StepListener {
 
         list = new ArrayList<String>();
         btnQr = (Button)findViewById(R.id.btnQr);
-        btnStart =(Button)findViewById(R.id.btnStart);
+        //btnStart =(Button)findViewById(R.id.btnStart);
         lblQr = (TextView)findViewById(R.id.lblQr);
         lblQr2 = (TextView) findViewById(R.id.lblQr2);
-        lblStepCounter = (TextView) findViewById(R.id.lblStepCounter);
+        //
+        // lblStepCounter = (TextView) findViewById(R.id.lblStepCounter);
         lblSteps = (TextView) findViewById(R.id.lblSteps);
         lblSteps.setText(String.valueOf(steps));
         btnEnd = (Button)findViewById(R.id.btnEnd);
@@ -101,15 +102,15 @@ public class MainActivity extends AppCompatActivity implements StepListener {
         });
 
 
-        btnStart.setOnClickListener(new OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this, TurnActivity.class);
-                intent.putExtra("content", qrContent);
-                startActivityForResult(intent, INTENT_REQUEST_QR_CODE_START);
-            }
-        });
+//        btnStart.setOnClickListener(new OnClickListener() {
+//
+//            @Override
+//            public void onClick(View v) {
+//                Intent intent = new Intent(MainActivity.this, TurnActivity.class);
+//                intent.putExtra("content", qrContent);
+//                startActivityForResult(intent, INTENT_REQUEST_QR_CODE_START);
+//            }
+//        });
         btnEnd.setOnClickListener(new OnClickListener() {
 
             @Override
@@ -135,7 +136,7 @@ public class MainActivity extends AppCompatActivity implements StepListener {
 
                         start = jsonObj.getString("startStation");
 
-                        ArrayList<String> list = new ArrayList<String>();
+                        //ArrayList<String> list = new ArrayList<String>();
                         JSONArray jsonArray = (JSONArray)input;
                         if (jsonArray != null) {
                             int len = jsonArray.length();
@@ -146,8 +147,12 @@ public class MainActivity extends AppCompatActivity implements StepListener {
                         }
 
 
-                    lblQr.setText(list.get(index));
-                    lblQr2.setText(list.get(index + 1));
+                        lblQr.setText(list.get(index));
+                        lblQr2.setText(list.get(index + 1));
+
+                        steps = 0;
+                        lblSteps.setText(String.valueOf(steps));
+
 
                     } catch (Exception e) {
                         e.getStackTrace();
@@ -164,7 +169,7 @@ public class MainActivity extends AppCompatActivity implements StepListener {
                     qrContent = data.getStringExtra("SCAN_RESULT");
 
                     try {
-                        list = new ArrayList<String>();
+                        //list = new ArrayList<String>();
                         JSONObject js = new JSONObject(qrContent);
                         end = js.getString("endStation");
 
@@ -215,21 +220,33 @@ public class MainActivity extends AppCompatActivity implements StepListener {
     public void onStep() {
         this.steps++;
         lblSteps.setText(String.valueOf(steps));
-        if(esHatDaten == true){
+        if(esHatDaten == true && letztereintrag == false){
             try{
                 if (steps == Integer.parseInt(list.get(index))){
 
                     index++;
-                    ttobj.speak("links", TextToSpeech.QUEUE_FLUSH, null);
+                    ttobj.speak(list.get(index), TextToSpeech.QUEUE_FLUSH, null);
+                    index++;
                     steps = 0;
                     lblSteps.setText(String.valueOf(steps));
-                    //lblQr.setText(list.get(index + 1));
-                    //lblQr2.setText(list.get(index + 2));
+                    try{
+                        lblQr.setText(list.get(index));
+                        lblQr2.setText(list.get(index + 1));
+                    }catch(Exception e){
+                        lblQr.setText("Sie sind gleich beim Ziel!");
+                        lblQr2.setText(list.get(index));
+                        letztereintrag = true;
+                    }
                 }
             }catch(Exception e){
                 Toast.makeText(getApplicationContext(),
                         e.getMessage(),
                         Toast.LENGTH_LONG).show();
+            }
+        }else if(letztereintrag == true){
+            if(steps == Integer.parseInt(list.get(index))){
+                lblSteps.setText("Sie haben ihr Ziel erreicht!");
+                ttobj.speak("Sie haben ihr Ziel erreicht", TextToSpeech.QUEUE_FLUSH, null);
             }
         }
     }

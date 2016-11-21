@@ -13,50 +13,42 @@
         android:id="@+id/btnQr"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="31dp"
-        android:text="QR Scan" />
+        android:text="QR Scan"
+        android:layout_below="@+id/lblSteps"
+        android:layout_toStartOf="@+id/lblSteps" />
 
     <TextView
         android:id="@+id/lblQr"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/btnQr"
+        android:layout_above="@+id/lblQr2"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="20dp" />
+        android:layout_marginBottom="34dp" />
 
     <Button
         android:id="@+id/btnEnd"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/btnStart"
-        android:layout_toRightOf="@+id/btnStart"
-        android:text="Ende" />
-
-    <Button
-        android:id="@+id/btnStart"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:text="Ende"
+        android:layout_marginBottom="28dp"
         android:layout_alignParentBottom="true"
-        android:layout_alignRight="@+id/lblQr"
-        android:layout_marginBottom="38dp"
-        android:text="Start" />
+        android:layout_toEndOf="@+id/lblSteps" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="New Text"
         android:id="@+id/lblSteps"
-        android:layout_below="@+id/lblQr"
+        android:layout_above="@+id/btnEnd"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="66dp" />
+        android:layout_marginBottom="190dp" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/lblQr2"
-        android:layout_below="@+id/lblQr"
-        android:layout_centerHorizontal="true" />
+        android:layout_above="@+id/btnEnd"
+        android:layout_toStartOf="@+id/btnEnd"
+        android:layout_marginBottom="77dp" />
 
 </RelativeLayout>
